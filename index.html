@@ -640,9 +640,9 @@
       used.push(cp.dataset.id); save();
       const title = cp.querySelector('b').textContent.replace('🌟 ', '');
       if (WA_NUMBER) {
-        const msg = 'Hi Dudu 💖 I\'m officially redeeming my voucher: "' + title + '". Please deliver ASAP. 🎟️';
+        const msg = 'Hi Dudu ❤️ I\'m officially redeeming my voucher: "' + title + '". Please deliver ASAP ✨';
         const a = document.createElement('a');
-        a.href = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg);
+        a.href = 'https://api.whatsapp.com/send?phone=' + WA_NUMBER + '&text=' + encodeURIComponent(msg);
         a.target = '_blank'; a.rel = 'noopener';
         document.body.appendChild(a); a.click(); a.remove();
       }
