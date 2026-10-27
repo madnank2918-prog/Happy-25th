@@ -2,9 +2,9 @@
 <html lang="en">
 <meta charset="utf-8">
 <title>Level 25 Unlocked</title>
-<meta name="description" content="Happy 25th birthday, Ubu! Your Quarter-Life Crisis Club membership kit is ready.">
+<meta name="description" content="Happy 25th birthday, Bubu! Your Quarter-Life Crisis Club membership kit is ready.">
 <meta property="og:title" content="Level 25 Unlocked 🎉">
-<meta property="og:description" content="Happy 25th birthday, Ubu! Your Quarter-Life Crisis Club membership kit is ready.">
+<meta property="og:description" content="Happy 25th birthday, Bubu! Your Quarter-Life Crisis Club membership kit is ready.">
 <meta property="og:image" content="https://madnank2918-prog.github.io/Happy-25th/photos/id.jpg">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
@@ -253,6 +253,41 @@
     .polaroid:nth-child(3) { grid-column: 1 / -1; width: 60%; justify-self: center; }
     .letter { padding: 30px 18px 24px; }
   }
+
+  /* ---------- Background: drifting colour clouds + scrapbook doodles ---------- */
+  body { position: relative; background-image: none; }
+  .sky { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; background: var(--paper); }
+  .sky::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(43,33,64,.07) 1.2px, transparent 1.3px); background-size: 22px 22px; }
+  .blob { position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%; will-change: transform; }
+  .blob.b1 { background: radial-gradient(circle, rgba(255,92,138,.30), rgba(255,92,138,0) 62%); top: -30vmax; left: -25vmax; animation: drift1 28s ease-in-out infinite alternate; }
+  .blob.b2 { background: radial-gradient(circle, rgba(255,214,107,.42), rgba(255,214,107,0) 62%); top: 10vh; right: -35vmax; animation: drift2 34s ease-in-out infinite alternate; }
+  .blob.b3 { background: radial-gradient(circle, rgba(159,227,201,.40), rgba(159,227,201,0) 62%); bottom: -35vmax; left: -15vmax; animation: drift3 30s ease-in-out infinite alternate; }
+  .blob.b4 { background: radial-gradient(circle, rgba(205,187,255,.45), rgba(205,187,255,0) 62%); bottom: -30vmax; right: -25vmax; animation: drift1 38s ease-in-out infinite alternate-reverse; }
+  @keyframes drift1 { to { transform: translate(18vw, 14vh) scale(1.1); } }
+  @keyframes drift2 { to { transform: translate(-22vw, 18vh) scale(.92); } }
+  @keyframes drift3 { to { transform: translate(20vw, -16vh) scale(1.08); } }
+  .doodles { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .doodle { position: absolute; width: var(--sz); height: var(--sz); transform: rotate(var(--rot)); }
+  .doodle svg { display: block; width: 100%; height: 100%; overflow: visible; animation: bob var(--dur) ease-in-out var(--delay) infinite alternate; }
+  .doodle.twinkle svg { animation: twinkle var(--dur) ease-in-out var(--delay) infinite alternate; }
+  @keyframes bob { from { transform: translateY(-6px) rotate(-6deg); } to { transform: translateY(6px) rotate(6deg); } }
+  @keyframes twinkle { from { transform: scale(.7); opacity: .5; } to { transform: scale(1.1); opacity: 1; } }
+  @media (max-width: 720px) { .doodle { --sz: calc(var(--szm)) !important; opacity: .75; } }
+
+  /* ---------- Our song ---------- */
+  #ytWrap { position: fixed; width: 1px; height: 1px; left: 0; bottom: 0; opacity: 0; pointer-events: none; overflow: hidden; }
+  .song {
+    position: fixed; z-index: 40; left: max(14px, env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: center; gap: 10px; padding: 9px 16px 9px 12px; border-radius: 999px;
+    background: var(--ink); color: var(--butter); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--pink);
+    font: 500 13px/1 var(--f-mono); letter-spacing: .04em; text-decoration: none; cursor: pointer;
+  }
+  .song .eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; }
+  .song .eq i { width: 3px; height: 4px; background: var(--pink); border-radius: 1px; }
+  .song.playing .eq i { animation: eq .9s ease-in-out infinite alternate; }
+  .song.playing .eq i:nth-child(2) { animation-delay: -.3s; }
+  .song.playing .eq i:nth-child(3) { animation-delay: -.6s; }
+  @keyframes eq { from { height: 3px; } to { height: 14px; } }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
     html { scroll-behavior: auto; }
@@ -260,6 +295,10 @@
 </style>
 
 <canvas id="confetti" aria-hidden="true"></canvas>
+<div id="ytWrap" aria-hidden="true"><div id="yt"></div></div>
+<button class="song" id="song" type="button" hidden><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="songLabel">our song</span></button>
+<div class="sky" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
+<div class="doodles" id="doodles" aria-hidden="true"></div>
 
 <div class="gate" id="gate" role="dialog" aria-label="Loading">
   <div class="gate-inner">
@@ -270,7 +309,7 @@
     <div class="terms" id="terms">
       <label for="t1"><input type="checkbox" id="t1"> I accept that my back will now make noises for no reason.</label>
       <label for="t2"><input type="checkbox" id="t2"> I accept that I'm still the cutest person in every room.</label>
-      <button class="btn pink" id="enter" disabled>Open my birthday</button>
+      <button class="btn pink" id="enter" disabled>Open my birthday present 🎁</button>
     </div>
   </div>
 </div>
@@ -285,9 +324,9 @@
 
     <div class="idcard">
       <div class="stripe"><span>Quarter-Life Crisis Club</span><span>Member Nº 25</span></div>
-      <div class="photo" id="idPhoto"><img src="photos/id.jpg" alt="Ubu sticking her tongue out"></div>
+      <div class="photo" id="idPhoto"><img src="photos/id.jpg" alt="Bubu sticking her tongue out"></div>
       <dl>
-        <dt>Member</dt><dd>Ubu, the Birthday Queen</dd>
+        <dt>Member</dt><dd>Bubu, the Birthday Queen</dd>
         <dt>Born</dt><dd>28.10.2001</dd>
         <dt>Level</dt><dd id="levelDd">25</dd>
         <dt>Status</dt><dd>Still cute, slightly crunchy</dd>
@@ -325,10 +364,10 @@
   </section>
   <section class="stages">
     <figure class="stage"><img src="photos/denial.jpg" alt="Us waving our hands, refusing"><figcaption><span class="stage-n">Stage 1 · Denial</span><b>"No. I'm 24 in spirit. Talk to the hand."</b></figcaption></figure>
-    <figure class="stage"><img src="photos/anger.jpg" alt="Ubu making a fist at me"><figcaption><span class="stage-n">Stage 2 · Anger</span><b>"Who approved this? Who signed off on 25?"</b></figcaption></figure>
+    <figure class="stage"><img src="photos/anger.jpg" alt="Bubu making a fist at me"><figcaption><span class="stage-n">Stage 2 · Anger</span><b>"Who approved this? Who signed off on 25?"</b></figcaption></figure>
     <figure class="stage"><img src="photos/depress.jpg" alt="Both of us pouting dramatically"><figcaption><span class="stage-n">Stage 3 · Bargaining</span><b>"Take him instead. Give me back my 24."</b></figcaption></figure>
-    <figure class="stage"><img src="photos/bargain.jpg" alt="Ubu pretending to choke me"><figcaption><span class="stage-n">Stage 4 · Depression</span><b>"My back hurts and it's only Tuesday."</b></figcaption></figure>
-    <figure class="stage"><img src="photos/accept.jpg" alt="Ubu smiling and cuddling me"><figcaption><span class="stage-n">Stage 5 · Acceptance</span><b>"Fine. 25 looks good on me. Obviously."</b></figcaption></figure>
+    <figure class="stage"><img src="photos/bargain.jpg" alt="Bubu pretending to choke me"><figcaption><span class="stage-n">Stage 4 · Depression</span><b>"My back hurts and it's only Tuesday."</b></figcaption></figure>
+    <figure class="stage"><img src="photos/accept.jpg" alt="Bubu smiling and cuddling me"><figcaption><span class="stage-n">Stage 5 · Acceptance</span><b>"Fine. 25 looks good on me. Obviously."</b></figcaption></figure>
   </section>
 
   <!-- Bingo -->
@@ -377,8 +416,8 @@
     <h2>Proof you got cuter every year</h2>
   </section>
   <section class="exhibits">
-    <figure class="polaroid"><span class="tape"></span><div class="ph"><img src="photos/pout.jpg" alt="Ubu pouting"></div><figcaption>Exhibit A: unreasonably cute</figcaption></figure>
-    <figure class="polaroid"><span class="tape"></span><div class="ph"><img src="photos/grin.jpg" alt="Ubu grinning"></div><figcaption>Exhibit B: professional-level pout</figcaption></figure>
+    <figure class="polaroid"><span class="tape"></span><div class="ph"><img src="photos/pout.jpg" alt="Bubu pouting"></div><figcaption>Exhibit A: unreasonably cute</figcaption></figure>
+    <figure class="polaroid"><span class="tape"></span><div class="ph"><img src="photos/grin.jpg" alt="Bubu grinning"></div><figcaption>Exhibit B: professional-level pout</figcaption></figure>
     <figure class="polaroid"><span class="tape"></span><div class="ph"><img src="photos/us.jpg" alt="Mirror selfie of us"></div><figcaption>Exhibit C: us, obviously</figcaption></figure>
   </section>
 
@@ -405,14 +444,14 @@
   <section class="letter">
     <span class="tape"></span>
     <figure class="letter-photo"><img src="photos/letter.jpg" alt="Us squishing each other's cheeks"></figure>
-    <p>Happy birthday, Ubu, my love.</p>
+    <p>Happy birthday, Bubu, my love.</p>
     <p>Twenty-five sounds like a big number, but you wear it so well. You're kind, you're funny, you're beautiful, and you make ordinary days feel like something worth remembering.</p>
     <p>If this is a quarter-life crisis, I'm glad I get to be in it with you. Whatever you decide to figure out this year, whether it's your career, your dreams or just what to have for dinner, I'm on your team. Always.</p>
     <p>Here's to 25, and to every year after it with you.</p>
     <p class="sign">— Always yours, Dudu 💖</p>
   </section>
 
-  <figure class="finale"><img src="photos/hug.jpg" alt="Ubu hugging me"></figure>
+  <figure class="finale"><img src="photos/hug.jpg" alt="Bubu hugging me"></figure>
 
   <footer>
     <div class="big">Happy 25th, my love</div>
@@ -424,6 +463,34 @@
 (function () {
   const BORN = new Date(2001, 9, 28, 0, 0, 0);
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Doodles ---------- */
+  (function () {
+    const S = {
+      heart: (f) => `<svg viewBox="0 0 24 24"><path d="M12 21s-7.2-4.7-9.2-7C-.1 10.4 3.5 6 7.5 7.5c1.9.7 3.6 2.3 4.5 3.5.9-1.2 2.6-2.8 4.5-3.5 4-1.5 7.5 3.1 4.7 6.9C19.2 16.3 12 21 12 21z" fill="${f}" stroke="#2B2140" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+      spark: (f) => `<svg viewBox="0 0 24 24"><path d="M12 1c.9 6 4.9 10 11 11-6.1 1-10.1 5-11 11-.9-6-4.9-10-11-11 6.1-1 10.1-5 11-11z" fill="${f}" stroke="#2B2140" stroke-width="1.4" stroke-linejoin="round"/></svg>`,
+      squig: (f) => `<svg viewBox="0 0 30 16"><path d="M2 10c3-7 6 7 9 0s6 7 9 0 6 7 8 0" fill="none" stroke="${f}" stroke-width="3.2" stroke-linecap="round"/></svg>`,
+      ring: (f) => `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="${f}" stroke-width="3.5"/></svg>`,
+      dot: (f) => `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="${f}" stroke="#2B2140" stroke-width="1.6"/></svg>`,
+      tf: (f) => `<svg viewBox="0 0 44 30"><text x="2" y="25" font-family="Shrikhand, Georgia, serif" font-size="25" fill="${f}" stroke="#2B2140" stroke-width="1.2" paint-order="stroke">25</text></svg>`
+    };
+    const C = ['#FF5C8A', '#FFD66B', '#9FE3C9', '#CDBBFF', '#FFFFFF'];
+    const kinds = ['heart', 'spark', 'squig', 'heart', 'ring', 'spark', 'dot', 'tf', 'heart', 'spark', 'squig', 'dot'];
+    const box = document.getElementById('doodles');
+    const N = 30; let seed = 7;
+    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    let html = '';
+    for (let i = 0; i < N; i++) {
+      const k = kinds[i % kinds.length], left = i % 2 === 0;
+      const x = left ? 1 + rnd() * 9 : 90 + rnd() * 8;
+      const y = 1 + (i / N) * 97 + rnd() * 2;
+      const sz = k === 'tf' ? 64 : k === 'squig' ? 52 : 26 + rnd() * 26;
+      const szm = Math.round(sz * .55);
+      const cls = k === 'spark' ? 'doodle twinkle' : 'doodle';
+      html += `<span class="${cls}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--sz:${Math.round(sz)}px;--szm:${szm}px;--rot:${Math.round(rnd() * 50 - 25)}deg;--dur:${(2.5 + rnd() * 3).toFixed(1)}s;--delay:-${(rnd() * 3).toFixed(1)}s">${S[k](C[(i * 3) % C.length])}</span>`;
+    }
+    box.innerHTML = html;
+  })();
 
   /* ---------- Confetti ---------- */
   // Tuned for phones: capped pixel ratio, pre-rendered sprites, no save/restore, hard cap on pieces.
@@ -477,6 +544,50 @@
     else { running = false; cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); }
   }
 
+  /* ---------- Our song (YouTube) ---------- */
+  const SONG_ID = 'EWMh6oF0K_A';
+  const song = document.getElementById('song'), songLabel = document.getElementById('songLabel');
+  let player = null, ytReady = false, ytFailed = false, wantPlay = false;
+  function openOnYouTube() {
+    const a = document.createElement('a');
+    a.href = 'https://www.youtube.com/watch?v=' + SONG_ID; a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function setSong(state) {
+    song.classList.toggle('playing', state === 'playing');
+    songLabel.textContent = state === 'playing' ? 'our song ♫ pause' : state === 'paused' ? '▶ play our song' : '♫ play our song on YouTube';
+  }
+  window.onYouTubeIframeAPIReady = function () {
+    try {
+      player = new YT.Player('yt', {
+        width: 200, height: 120, videoId: SONG_ID,
+        playerVars: { playsinline: 1, controls: 0, rel: 0, loop: 1, playlist: SONG_ID },
+        events: {
+          onReady: () => { ytReady = true; if (wantPlay) player.playVideo(); },
+          onError: () => { ytFailed = true; setSong('link'); },
+          onStateChange: e => { if (e.data === 1) setSong('playing'); else if (e.data === 2 || e.data === 0) setSong('paused'); }
+        }
+      });
+    } catch (e) { ytFailed = true; }
+  };
+  (function () { const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.onerror = () => { ytFailed = true; }; document.head.appendChild(s); })();
+  function startSong() {
+    song.hidden = false;
+    if (ytFailed) { setSong('link'); return; }
+    wantPlay = true;
+    if (ytReady) player.playVideo();
+    setSong('paused');
+    // If the phone blocked autoplay, the pill stays on "play our song" so one more tap starts it.
+    setTimeout(() => { if (ytFailed || !player || typeof player.getPlayerState !== 'function') setSong('link'); }, 4000);
+  }
+  song.addEventListener('click', () => {
+    if (ytFailed || !player || typeof player.getPlayerState !== 'function') { openOnYouTube(); return; }
+    if (player.getPlayerState() === 1) { player.pauseVideo(); return; }
+    player.playVideo();
+    // Some phones refuse to play an embedded video; then the next tap opens it on YouTube instead.
+    setTimeout(() => { const st = player.getPlayerState(); if (st !== 1 && st !== 3) { ytFailed = true; setSong('link'); } }, 2500);
+  });
+
   /* ---------- Gate ---------- */
   const gate = document.getElementById('gate');
   const fill = document.getElementById('barFill');
@@ -502,7 +613,7 @@
   const t1 = document.getElementById('t1'), t2 = document.getElementById('t2'), enter = document.getElementById('enter');
   function check() { enter.disabled = !(t1.checked && t2.checked); }
   t1.addEventListener('change', check); t2.addEventListener('change', check);
-  enter.addEventListener('click', () => { gate.classList.add('gone'); confetti(220, 3500); });
+  enter.addEventListener('click', () => { gate.classList.add('gone'); confetti(220, 3500); startSong(); });
 
   /* ---------- Age + live counters ---------- */
   function age(now) {
