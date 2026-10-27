@@ -619,6 +619,14 @@
   /* ---------- Coupons ---------- */
   // Put your WhatsApp number here, country code first, digits only (e.g. '6281234567890'). Empty = no WhatsApp.
   const WA_NUMBER = '6285215457457';
+  // One message per voucher. Only BMP emoji (no 4-byte ones) so WhatsApp never shows "?" boxes.
+  const WA_MSGS = {
+    rant: "Hi Dudu ❤️ I'm officially redeeming my UNLIMITED RANT SESSION voucher. Please clear your schedule and prepare your best \"you're so right\" face. Do not try to fix anything. Just nod. ✨",
+    snack: "❗EMERGENCY❗ This is not a drill. I'm redeeming my Emergency Snack Delivery voucher. Symptoms: hungry, slightly cranky, extremely cute. Prescription: snacks. Please confirm delivery time ☺",
+    pep: "Dudu, I need my \"you're not old, you're vintage\" pep talk. Full eye contact and a hug, as stated in the terms and conditions. I have a screenshot. ❤️",
+    date: "Hi Dudu ✨ I'm redeeming my Date of My Choosing voucher. I pick the place, you pay, and you are not allowed to complain about the drive. It's in writing, sir. ☺",
+    golden: "★ GOLDEN VOUCHER UNLOCKED ★ I used every single voucher, so now you owe me a surprise date planned entirely by you. No pressure. (Lots of pressure.) ❤️"
+  };
   const KEY = 'lvl25-redeemed';
   let used = [];
   try { used = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
@@ -638,9 +646,8 @@
       if (!armed) { armed = true; btn.textContent = 'Sure? It\'s single use'; setTimeout(() => { if (armed) { armed = false; btn.textContent = 'Redeem'; } }, 4000); return; }
       armed = false;
       used.push(cp.dataset.id); save();
-      const title = cp.querySelector('b').textContent.replace('🌟 ', '');
       if (WA_NUMBER) {
-        const msg = 'Hi Dudu ❤️ I\'m officially redeeming my voucher: "' + title + '". Please deliver ASAP ✨';
+        const msg = WA_MSGS[cp.dataset.id];
         const a = document.createElement('a');
         a.href = 'https://api.whatsapp.com/send?phone=' + WA_NUMBER + '&text=' + encodeURIComponent(msg);
         a.target = '_blank'; a.rel = 'noopener';
