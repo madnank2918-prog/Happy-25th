@@ -426,41 +426,55 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- Confetti ---------- */
+  // Tuned for phones: capped pixel ratio, pre-rendered sprites, no save/restore, hard cap on pieces.
   const cv = document.getElementById('confetti');
   const cx = cv.getContext('2d');
-  let pieces = [], running = false, emitUntil = 0, last = 0;
-  function sizeCanvas() { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; cx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0); }
+  const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+  const MAX = innerWidth < 600 ? 220 : 340;
+  let pieces = [], running = false, emitUntil = 0, last = 0, W = innerWidth, H = innerHeight;
+  function sizeCanvas() { W = innerWidth; H = innerHeight; cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); }
   sizeCanvas(); addEventListener('resize', sizeCanvas);
   const COLORS = ['#FF5C8A', '#FFD66B', '#9FE3C9', '#CDBBFF', '#FFFFFF'];
+  function sprite(draw, w, h) { const c = document.createElement('canvas'); c.width = w * 2; c.height = h * 2; const g = c.getContext('2d'); g.scale(2, 2); draw(g); return c; }
+  const RECTS = COLORS.map(col => sprite(g => { g.fillStyle = col; g.fillRect(0, 0, 10, 14); }, 10, 14));
+  const HEART = sprite(g => { g.font = '16px serif'; g.textBaseline = 'top'; g.fillText('❤️', 1, 1); }, 20, 20);
   function piece(x, y, vx, vy) {
-    return { x, y, vx, vy, w: 6 + Math.random() * 6, h: 8 + Math.random() * 10, r: Math.random() * 6, vr: (Math.random() - .5) * .3,
-      c: COLORS[(Math.random() * COLORS.length) | 0], heart: Math.random() < .18 };
+    const heart = Math.random() < .14, s = .6 + Math.random() * .6;
+    return { x, y, vx, vy, s, r: Math.random() * 6, vr: (Math.random() - .5) * .3, f: Math.random() * 6, vf: .08 + Math.random() * .12,
+      img: heart ? HEART : RECTS[(Math.random() * RECTS.length) | 0], heart };
   }
   // Pops instantly from both bottom corners, then rains from the top for `ms`, then stops.
   function confetti(n, ms) {
     if (reduce) return;
-    n = n || 160;
+    n = Math.min(n || 160, MAX - pieces.length);
     for (let i = 0; i < n; i++) {
       const left = i % 2 === 0, a = 0.25 + Math.random() * 0.45, s = 13 + Math.random() * 9;
-      pieces.push(piece(left ? 0 : innerWidth, innerHeight, (left ? 1 : -1) * Math.sin(a) * s, -Math.cos(a) * s));
+      pieces.push(piece(left ? 0 : W, H, (left ? 1 : -1) * Math.sin(a) * s, -Math.cos(a) * s));
     }
     emitUntil = Math.max(emitUntil, performance.now() + (ms || 2500));
     if (!running) { running = true; last = performance.now(); requestAnimationFrame(tick); }
   }
+  let carry = 0;
   function tick(now) {
     const dt = Math.min(3, (now - last) / 16.7); last = now;
-    if (now < emitUntil) for (let i = 0; i < 3 * dt; i++) pieces.push(piece(Math.random() * innerWidth, -10, (Math.random() - .5) * 2, 2 + Math.random() * 3));
-    cx.clearRect(0, 0, innerWidth, innerHeight);
-    pieces = pieces.filter(p => p.y < innerHeight + 40 && p.x > -60 && p.x < innerWidth + 60);
-    for (const p of pieces) {
-      p.vy = Math.min(p.vy + 0.32 * dt, 5.5); p.vx *= Math.pow(0.985, dt);
-      p.y += p.vy * dt; p.x += (p.vx + Math.sin(p.y / 40) * .6) * dt; p.r += p.vr * dt;
-      cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
-      if (p.heart) { cx.font = '18px serif'; cx.fillText('💖', -9, 6); }
-      else cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      cx.restore();
+    if (now < emitUntil) {
+      carry += 1.6 * dt;
+      while (carry >= 1) { carry--; if (pieces.length < MAX) pieces.push(piece(Math.random() * W, -14, (Math.random() - .5) * 2, 2 + Math.random() * 3)); }
     }
-    if (pieces.length || now < emitUntil) requestAnimationFrame(tick); else { running = false; cx.clearRect(0, 0, innerWidth, innerHeight); }
+    cx.setTransform(1, 0, 0, 1, 0, 0);
+    cx.clearRect(0, 0, cv.width, cv.height);
+    const drag = Math.pow(0.985, dt);
+    for (let i = pieces.length - 1; i >= 0; i--) {
+      const p = pieces[i];
+      p.vy = Math.min(p.vy + 0.32 * dt, 5.5); p.vx *= drag;
+      p.y += p.vy * dt; p.x += (p.vx + Math.sin(p.y / 40) * .6) * dt; p.r += p.vr * dt; p.f += p.vf * dt;
+      if (p.y > H + 30 || p.x < -40 || p.x > W + 40) { pieces[i] = pieces[pieces.length - 1]; pieces.pop(); continue; }
+      const c = Math.cos(p.r) * p.s * DPR, sn = Math.sin(p.r) * p.s * DPR, flip = p.heart ? 1 : Math.cos(p.f);
+      cx.setTransform(c * flip, sn * flip, -sn, c, p.x * DPR, p.y * DPR);
+      cx.drawImage(p.img, -p.img.width / 4, -p.img.height / 4, p.img.width / 2, p.img.height / 2);
+    }
+    if (pieces.length || now < emitUntil) requestAnimationFrame(tick);
+    else { running = false; cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); }
   }
 
   /* ---------- Gate ---------- */
