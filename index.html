@@ -86,7 +86,22 @@
     transition: opacity .6s ease, visibility .6s;
   }
   .gate.gone { opacity: 0; visibility: hidden; }
-  .gate-inner { width: min(460px, 100%); display: grid; gap: 18px; }
+  .gate { overflow: hidden; }
+  .gate .blob { opacity: .55; }
+  .gate .blob.b1 { background: radial-gradient(circle, rgba(255,92,138,.45), rgba(255,92,138,0) 62%); }
+  .gate .blob.b4 { background: radial-gradient(circle, rgba(205,187,255,.40), rgba(205,187,255,0) 62%); }
+  .gate-doodles { position: absolute; inset: 0; pointer-events: none; }
+  .gate-inner {
+    position: relative; z-index: 1; width: min(460px, 100%); display: grid; gap: 18px;
+    background: #362A4E; border: 2px solid var(--paper); border-radius: 18px; box-shadow: 6px 6px 0 var(--pink);
+    padding: 0 22px 24px; overflow: hidden;
+  }
+  .win-bar { margin: 0 -22px; padding: 10px 14px; display: flex; align-items: center; gap: 6px; border-bottom: 2px solid var(--paper); background: var(--ink); }
+  .win-bar i { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--paper); }
+  .win-bar i:nth-child(1) { background: var(--pink); }
+  .win-bar i:nth-child(2) { background: var(--butter); }
+  .win-bar i:nth-child(3) { background: var(--mint); }
+  .win-bar span { margin-left: auto; font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lilac); }
   .gate .eyebrow { color: var(--lilac); }
   .gate h1 { font-size: clamp(34px, 9vw, 52px); color: var(--butter); }
   .bar { height: 18px; border: 2px solid var(--paper); border-radius: 999px; overflow: hidden; }
@@ -301,7 +316,10 @@
 <div class="doodles" id="doodles" aria-hidden="true"></div>
 
 <div class="gate" id="gate" role="dialog" aria-label="Loading">
+  <div class="blob b1" aria-hidden="true"></div><div class="blob b4" aria-hidden="true"></div>
+  <div class="gate-doodles" id="gateDoodles" aria-hidden="true"></div>
   <div class="gate-inner">
+    <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i><span>bubu.exe</span></div>
     <div class="eyebrow">System update · v24.9 → v25.0</div>
     <h1>Installing adulthood…</h1>
     <div class="bar" aria-hidden="true"><span id="barFill"></span></div>
@@ -467,29 +485,31 @@
   /* ---------- Doodles ---------- */
   (function () {
     const S = {
-      heart: (f) => `<svg viewBox="0 0 24 24"><path d="M12 21s-7.2-4.7-9.2-7C-.1 10.4 3.5 6 7.5 7.5c1.9.7 3.6 2.3 4.5 3.5.9-1.2 2.6-2.8 4.5-3.5 4-1.5 7.5 3.1 4.7 6.9C19.2 16.3 12 21 12 21z" fill="${f}" stroke="#2B2140" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
-      spark: (f) => `<svg viewBox="0 0 24 24"><path d="M12 1c.9 6 4.9 10 11 11-6.1 1-10.1 5-11 11-.9-6-4.9-10-11-11 6.1-1 10.1-5 11-11z" fill="${f}" stroke="#2B2140" stroke-width="1.4" stroke-linejoin="round"/></svg>`,
+      heart: (f, k) => `<svg viewBox="0 0 24 24"><path d="M12 21s-7.2-4.7-9.2-7C-.1 10.4 3.5 6 7.5 7.5c1.9.7 3.6 2.3 4.5 3.5.9-1.2 2.6-2.8 4.5-3.5 4-1.5 7.5 3.1 4.7 6.9C19.2 16.3 12 21 12 21z" fill="${f}" stroke="${k}" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+      spark: (f, k) => `<svg viewBox="0 0 24 24"><path d="M12 1c.9 6 4.9 10 11 11-6.1 1-10.1 5-11 11-.9-6-4.9-10-11-11 6.1-1 10.1-5 11-11z" fill="${f}" stroke="${k}" stroke-width="1.4" stroke-linejoin="round"/></svg>`,
       squig: (f) => `<svg viewBox="0 0 30 16"><path d="M2 10c3-7 6 7 9 0s6 7 9 0 6 7 8 0" fill="none" stroke="${f}" stroke-width="3.2" stroke-linecap="round"/></svg>`,
       ring: (f) => `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="${f}" stroke-width="3.5"/></svg>`,
-      dot: (f) => `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="${f}" stroke="#2B2140" stroke-width="1.6"/></svg>`,
-      tf: (f) => `<svg viewBox="0 0 44 30"><text x="2" y="25" font-family="Shrikhand, Georgia, serif" font-size="25" fill="${f}" stroke="#2B2140" stroke-width="1.2" paint-order="stroke">25</text></svg>`
+      dot: (f, k) => `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="${f}" stroke="${k}" stroke-width="1.6"/></svg>`,
+      tf: (f, k) => `<svg viewBox="0 0 44 30"><text x="2" y="25" font-family="Shrikhand, Georgia, serif" font-size="25" fill="${f}" stroke="${k}" stroke-width="1.2" paint-order="stroke">25</text></svg>`
     };
     const C = ['#FF5C8A', '#FFD66B', '#9FE3C9', '#CDBBFF', '#FFFFFF'];
     const kinds = ['heart', 'spark', 'squig', 'heart', 'ring', 'spark', 'dot', 'tf', 'heart', 'spark', 'squig', 'dot'];
-    const box = document.getElementById('doodles');
-    const N = 30; let seed = 7;
+    function render(box, N, seed, ink, spread) {
     const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
     let html = '';
     for (let i = 0; i < N; i++) {
       const k = kinds[i % kinds.length], left = i % 2 === 0;
-      const x = left ? 1 + rnd() * 9 : 90 + rnd() * 8;
-      const y = 1 + (i / N) * 97 + rnd() * 2;
+      const x = left ? 1 + rnd() * spread : 99 - spread + rnd() * (spread - 2);
+      const y = 1 + (i / N) * 94 + rnd() * 3;
       const sz = k === 'tf' ? 64 : k === 'squig' ? 52 : 26 + rnd() * 26;
       const szm = Math.round(sz * .55);
       const cls = k === 'spark' ? 'doodle twinkle' : 'doodle';
-      html += `<span class="${cls}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--sz:${Math.round(sz)}px;--szm:${szm}px;--rot:${Math.round(rnd() * 50 - 25)}deg;--dur:${(2.5 + rnd() * 3).toFixed(1)}s;--delay:-${(rnd() * 3).toFixed(1)}s">${S[k](C[(i * 3) % C.length])}</span>`;
+      html += `<span class="${cls}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--sz:${Math.round(sz)}px;--szm:${szm}px;--rot:${Math.round(rnd() * 50 - 25)}deg;--dur:${(2.5 + rnd() * 3).toFixed(1)}s;--delay:-${(rnd() * 3).toFixed(1)}s">${S[k](C[(i * 3) % C.length], ink)}</span>`;
     }
     box.innerHTML = html;
+    }
+    render(document.getElementById('doodles'), 30, 7, '#2B2140', 9);
+    render(document.getElementById('gateDoodles'), 16, 3, '#FFF1F4', 22);
   })();
 
   /* ---------- Confetti ---------- */
